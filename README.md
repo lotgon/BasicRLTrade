@@ -4,12 +4,17 @@ Test Q-Value and Actor-Critics algorithms in Forex domain.
 - There are custom embedding price sequence based on k-means
 - Stochastic is added to the environment
 
-#Prerequsites:
+## Prerequsites:
 - Windows OS, R
 - run prerequisite.R to install all dependacies. Non cran package will be installed too [rTTRatesHistory](https://github.com/SoftFx/TTWebClient-R)
 
 
-#Project Structure:
+## Project Structure:
 - ~\tools\QuotesDownloader\ tools from [QuotesDownloader](https://github.com/SoftFx/QuotesDownloader/releases)
 - ~\QuotesData\ quotes file cache
+
+
+## First Steps
+1. DownloadQuotes.R -> GetQuotes  (...)
+2. Build k-cluster means 
 
