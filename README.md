@@ -5,5 +5,11 @@ Test Q-Value and Actor-Critics algorithms in Forex domain.
 - Stochastic is added to the environment
 
 #Prerequsites:
-- Windows OS
-- R, R custom Package: [rTTRatesHistory](https://github.com/SoftFx/TTWebClient-R), [QuotesDownloader](https://github.com/SoftFx/QuotesDownloader/releases)
+- Windows OS, R
+- run prerequisite.R to install all dependacies. Non cran package will be installed too [rTTRatesHistory](https://github.com/SoftFx/TTWebClient-R)
+
+
+#Project Structure:
+- ~\tools\QuotesDownloader\ tools from [QuotesDownloader](https://github.com/SoftFx/QuotesDownloader/releases)
+- ~\QuotesData\ quotes file cache
+
