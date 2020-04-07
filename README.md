@@ -6,4 +6,4 @@ Test Q-Value and Actor-Critics algorithms in Forex domain.
 
 #Prerequsites:
 - Windows OS
-- R, R custom Package: [TTWebClient-R](https://github.com/SoftFx/TTWebClient-R), [QuotesDownloader](https://github.com/SoftFx/QuotesDownloader/releases)
+- R, R custom Package: [rTTRatesHistory](https://github.com/SoftFx/TTWebClient-R), [QuotesDownloader](https://github.com/SoftFx/QuotesDownloader/releases)
