@@ -15,8 +15,15 @@ Test Q-Value and Actor-Critics algorithms in Forex domain.
 
 
 ## First Steps
-1. Embedding quote series. First step is building k-cluster means. Run function BuildCenterLines(c("EURUSD", "EURCHF"), startDate=ISOdate(2017, 6, 1, tz = "UTC"), endDate=ISOdate(2019, 6, 1, tz = "UTC"), "M15", cluster_number=50, 360, outputName="cTable1200_EuroSymbols"). Result will be saved to saveRDS(.., "cTable1200_EuroSymbols") file. 
+1. Embedding quote series. First step is building k-cluster means. Run function:
+```r 
+BuildCenterLines(c("EURUSD", "EURCHF"), startDate=ISOdate(2017, 6, 1, tz = "UTC"), endDate=ISOdate(2019, 6, 1, tz = "UTC"), "M15", cluster_number=50, 360, outputName="cTable1200_EuroSymbols"). 
+```
+Result will be saved as saveRDS(.., "cTable1200_EuroSymbols") file. 
 Cluster Number is embedding size.
-Test the result with command: ggplot(cTable, aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line().
+Test the result with command: 
+```r
+ggplot(cTable, aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
+```
 2. 
 
