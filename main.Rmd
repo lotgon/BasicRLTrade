@@ -1,0 +1,69 @@
+---
+title: "Prepare data for env/agent"
+output: html_notebook
+---
+#Configure parameters
+```{r}
+rm(list=ls())
+
+EmbeddingStartDate       <- ISOdate(2010, 6, 1, tz = "UTC")
+EmbeddingEndDate         <- ISOdate(2019, 6, 1, tz = "UTC")
+EmbeddingSize            <- 50
+Periodicity     <- "M15"
+TradedSymbol    <- "EURUSD"
+Cluster_number  <- EmbeddingSize
+Window_size     <- 360
+
+OutputFolder <- paste("output", TradedSymbol, Periodicity, sep="_")
+RawCenters_FileName <- file.path(OutputFolder, "rawCenters.csv")
+MeltedCTable_FileName <- file.path(OutputFolder, "meltedCTable.rds")
+AgentData_FileName  <- file.path(OutputFolder, "agentData.csv")
+EnvData_FileName    <- file.path(OutputFolder, "envData.csv")
+
+StartDate       <- ISOdate(2016, 6, 1, tz = "UTC")
+EndDate         <- ISOdate(2020, 4, 1, tz = "UTC")
+
+```
+
+
+
+```{r}
+source("BuildClusters.R")
+source("PrepareStateRewardData.R")
+require(ggplot2)
+
+if(!dir.exists(OutputFolder))
+  dir.create(file.path(OutputFolder))
+```
+
+#Generate kmeans lines for time series embedding
+```{r}
+if( !file.exists(RawCenters_FileName))
+  BuildCenterLines(c(TradedSymbol), EmbeddingStartDate, EmbeddingEndDate, Periodicity, Cluster_number, Window_size, RawCenters_FileName, MeltedCTable_FileName)
+#review result 
+meltedcTable <- readRDS(MeltedCTable_FileName)
+ggplot(meltedcTable[symbol==TradedSymbol], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
+```
+
+# Create 
+```{r}
+BuildEnvironmentData(StartDate, EndDate, TradedSymbol, Periodicity, EnvData_FileName)
+BuildAgentData(StartDate, EndDate, TradedSymbol, Periodicity, Window_size, RawCenters_FileName, AgentData_FileName )
+```
+
+##Sanity check
+```{r}
+quotes      <- fread(EnvData_FileName)
+agentData   <- fread(AgentData_FileName)
+
+sampleDate  <- agentData[sample(1:.N, 1),datetime]
+embeddedData <- unlist(agentData[datetime==sampleDate,2:ncol(agentData),with=FALSE])
+closestCenters <- c(0, order(embeddedData)[1:3])
+
+index <- quotes[ datetime==sampleDate, which = TRUE]
+sampleData <- quotes[(index-Window_size):(index-1), .(index=1:.N, value=open.bid/mean(open.bid), clusterIndex=0, clusterPower=0.0001, symbol=TradedSymbol)]
+drawData <- rbind(meltedcTable, sampleData, fill=TRUE)
+
+ggplot(drawData[symbol==TradedSymbol & clusterIndex %in% closestCenters], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line() 
+```
+

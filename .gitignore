@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+tools\QuotesDownloader\Logs
+.cache
+Logs
+/output_EURUSD_M15
