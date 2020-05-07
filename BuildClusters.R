@@ -18,7 +18,7 @@ BuildCenterLines <- function(symbols, startDate, endDate, periodicity="M15", clu
       }
       m <- rbind(m_part, m)
     }
-    r <- kmeans(m, cluster_number, iter.max = 40)
+    r <- kmeans(m, cluster_number, iter.max = 60)
     
     centers <- as.data.table(r$centers)
     fwrite(centers, outputRawCenters_FileName)

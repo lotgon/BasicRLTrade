@@ -9,7 +9,7 @@ rm(list=ls())
 EmbeddingStartDate       <- ISOdate(2010, 6, 1, tz = "UTC")
 EmbeddingEndDate         <- ISOdate(2019, 6, 1, tz = "UTC")
 EmbeddingSize            <- 50
-Periodicity     <- "M15"
+Periodicity     <- "M1"
 TradedSymbol    <- "EURUSD"
 Cluster_number  <- EmbeddingSize
 Window_size     <- 360
@@ -20,8 +20,8 @@ MeltedCTable_FileName <- file.path(OutputFolder, "meltedCTable.rds")
 AgentData_FileName  <- file.path(OutputFolder, "agentData.csv")
 EnvData_FileName    <- file.path(OutputFolder, "envData.csv")
 
-StartDate       <- ISOdate(2016, 6, 1, tz = "UTC")
-EndDate         <- ISOdate(2020, 4, 1, tz = "UTC")
+StartDate       <- ISOdate(2019, 1, 1, tz = "UTC")
+EndDate         <- ISOdate(2020, 5, 1, tz = "UTC")
 
 ```
 
