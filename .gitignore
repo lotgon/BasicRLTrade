@@ -2,7 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-tools\QuotesDownloader\Logs
-.cache
-Logs
-/output_EURUSD_M15
+/2. Environments/tensorboard/DQN_4/*.RIX-DVP-SRV01
+/2. Environments/tensorboard/DQN_5/*.RIX-DVP-SRV01
+*.RIX-DVP-SRV01
+/output_EURUSD_M1

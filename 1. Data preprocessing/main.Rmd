@@ -14,7 +14,7 @@ TradedSymbol    <- "EURUSD"
 Cluster_number  <- EmbeddingSize
 Window_size     <- 360
 
-OutputFolder <- paste("output", TradedSymbol, Periodicity, sep="_")
+OutputFolder <- paste("../output", TradedSymbol, Periodicity, sep="_")
 RawCenters_FileName <- file.path(OutputFolder, "rawCenters.csv")
 MeltedCTable_FileName <- file.path(OutputFolder, "meltedCTable.rds")
 AgentData_FileName  <- file.path(OutputFolder, "agentData.csv")
@@ -47,8 +47,9 @@ ggplot(meltedcTable[symbol==TradedSymbol], aes(x=index, y=value, group=clusterIn
 
 # Create 
 ```{r}
-BuildEnvironmentData(StartDate, EndDate, TradedSymbol, Periodicity, EnvData_FileName)
-BuildAgentData(StartDate, EndDate, TradedSymbol, Periodicity, Window_size, RawCenters_FileName, AgentData_FileName )
+quotes <- BuildEnvironmentData(StartDate, EndDate, TradedSymbol, Periodicity, EnvData_FileName)
+agentData <- BuildAgentData(quotes, Window_size, RawCenters_FileName, AgentData_FileName )
+
 ```
 
 ##Sanity check
@@ -61,9 +62,27 @@ embeddedData <- unlist(agentData[datetime==sampleDate,2:ncol(agentData),with=FAL
 closestCenters <- c(0, order(embeddedData)[1:3])
 
 index <- quotes[ datetime==sampleDate, which = TRUE]
-sampleData <- quotes[(index-Window_size):(index-1), .(index=1:.N, value=open.bid/mean(open.bid), clusterIndex=0, clusterPower=0.0001, symbol=TradedSymbol)]
+sampleData <- quotes[(index-Window_size):(index-1), .(index=1:.N, value=close.bid/mean(close.bid), clusterIndex=0, clusterPower=0.0001, symbol=TradedSymbol)]
 drawData <- rbind(meltedcTable, sampleData, fill=TRUE)
 
 ggplot(drawData[symbol==TradedSymbol & clusterIndex %in% closestCenters], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line() 
 ```
 
+#create small training data 
+```{r}
+quotes      <- fread(EnvData_FileName)
+agentData   <- fread(AgentData_FileName)
+
+easyEnvData_FileName    <- file.path(OutputFolder, "easyEnvData.csv")
+easyAgentData_FileName  <- file.path(OutputFolder, "easyAgentData.csv")
+
+
+#we replicate 200 times to avoid bias at the end of period. Bot could create huge position without consequences.
+smallIndex <- rep(c(1:(3*Window_size), (3*Window_size):1), 200)
+easyquotes <- quotes[smallIndex,]
+easyAgentData <- BuildAgentData(easyquotes, Window_size, RawCenters_FileName, easyAgentData_FileName )
+
+fwrite(easyquotes, easyEnvData_FileName)
+
+ggplot(easyquotes[1:(24*Window_size), .(i = .I, close.bid)], aes(x=i, y=close.bid)) + geom_point()
+```
