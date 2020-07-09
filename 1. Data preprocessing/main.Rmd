@@ -13,8 +13,9 @@ Periodicity     <- "M1"
 TradedSymbol    <- "EURUSD"
 Cluster_number  <- EmbeddingSize
 Window_size     <- 360
+Simulation      <- "sin"
 
-OutputFolder <- paste("../output", TradedSymbol, Periodicity, sep="_")
+OutputFolder <- paste("../output", TradedSymbol, Periodicity, Simulation, sep="_")
 RawCenters_FileName <- file.path(OutputFolder, "rawCenters.csv")
 MeltedCTable_FileName <- file.path(OutputFolder, "meltedCTable.rds")
 AgentData_FileName  <- file.path(OutputFolder, "agentData.csv")
@@ -42,12 +43,13 @@ if( !file.exists(RawCenters_FileName))
   BuildCenterLines(c(TradedSymbol), EmbeddingStartDate, EmbeddingEndDate, Periodicity, Cluster_number, Window_size, RawCenters_FileName, MeltedCTable_FileName)
 #review result 
 meltedcTable <- readRDS(MeltedCTable_FileName)
-ggplot(meltedcTable[symbol==TradedSymbol], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
+ggplot(meltedcTable[symbol==TradedSymbol & clusterIndex==45], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
 ```
 
 # Create 
 ```{r}
 quotes <- BuildEnvironmentData(StartDate, EndDate, TradedSymbol, Periodicity, EnvData_FileName)
+quotes <- Convert2Simulation(EnvData_FileName, Simulation, window_size = Window_size)
 agentData <- BuildAgentData(quotes, Window_size, RawCenters_FileName, AgentData_FileName )
 
 ```
@@ -58,7 +60,7 @@ quotes      <- fread(EnvData_FileName)
 agentData   <- fread(AgentData_FileName)
 
 sampleDate  <- agentData[sample(1:.N, 1),datetime]
-embeddedData <- unlist(agentData[datetime==sampleDate,2:ncol(agentData),with=FALSE])
+embeddedData <- unlist(agentData[datetime==sampleDate,6:ncol(agentData),with=FALSE])
 closestCenters <- c(0, order(embeddedData)[1:3])
 
 index <- quotes[ datetime==sampleDate, which = TRUE]
@@ -70,19 +72,5 @@ ggplot(drawData[symbol==TradedSymbol & clusterIndex %in% closestCenters], aes(x=
 
 #create small training data 
 ```{r}
-quotes      <- fread(EnvData_FileName)
-agentData   <- fread(AgentData_FileName)
-
-easyEnvData_FileName    <- file.path(OutputFolder, "easyEnvData.csv")
-easyAgentData_FileName  <- file.path(OutputFolder, "easyAgentData.csv")
-
-
-#we replicate 200 times to avoid bias at the end of period. Bot could create huge position without consequences.
-smallIndex <- rep(c(1:(3*Window_size), (3*Window_size):1), 200)
-easyquotes <- quotes[smallIndex,]
-easyAgentData <- BuildAgentData(easyquotes, Window_size, RawCenters_FileName, easyAgentData_FileName )
-
-fwrite(easyquotes, easyEnvData_FileName)
-
-ggplot(easyquotes[1:(24*Window_size), .(i = .I, close.bid)], aes(x=i, y=close.bid)) + geom_point()
+ggplot(quotes[1:(24*Window_size), .(i = .I, close.bid)], aes(x=i, y=close.bid)) + geom_point()
 ```

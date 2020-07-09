@@ -32,6 +32,26 @@ BuildEnvironmentData <- function(startDate=ISOdate(2017, 6, 1, tz = "UTC"), endD
   fwrite(quotes, outputEnvData_FileName)
   quotes
 }
+Convert2Simulation <- function(EnvData_FileName, simulationType = "sin", window_size){
+  quotes <- fread(EnvData_FileName)
+  if( simulationType == "sin"){
+    med <- quotes[1:(7*window_size), median(close.ask)]
+    max <- quotes[1:(7*window_size), max(close.ask)]
+    quotes[,newclose.ask:=sin(.I*pi/2/window_size) * (max-med) + med]
+    quotes[,close.bid:= newclose.ask - (close.ask-close.bid)]
+    quotes[,high.ask:= newclose.ask - (close.ask-high.ask)]
+    quotes[,low.bid := newclose.ask - (close.ask-low.bid)]
+    quotes[,close.ask:=newclose.ask]
+    quotes[,newclose.ask:=NULL]
+  }
+  if( simulationType == "mirror"){
+    #we replicate 200 times to avoid bias at the end of period. Bot could create huge position without consequences.
+    smallIndex <- rep(c(1:(3*window_size), (3*window_size):1), 200)
+    quotes <- quotes[smallIndex,]
+  }
+  fwrite(quotes, EnvData_FileName)
+  quotes
+}
 
 
 

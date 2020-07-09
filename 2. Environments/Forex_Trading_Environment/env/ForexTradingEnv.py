@@ -11,7 +11,7 @@ from math import copysign
 #MAX_OPEN_POSITIONS = 5
 #MAX_STEPS = 20000
 
-EMBEDDING_SIZE = 50
+EMBEDDING_SIZE = 0
 #BAR_HISTORY = 10
 
 INITIAL_ACCOUNT_BALANCE = 1000
@@ -35,7 +35,7 @@ class ForexTradingEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
 
         # Prices contains the OHCL values for the last five prices and last one is account info
-        self.observation_space = spaces.Box(low=0, high=1, shape=(2+EMBEDDING_SIZE,), dtype=np.float16)
+        self.observation_space = spaces.Box(low=0, high=1, shape=(3+4+EMBEDDING_SIZE,), dtype=np.float16)
 
     def reset(self):
         # Reset the state of the environment to an initial state
@@ -54,8 +54,9 @@ class ForexTradingEnv(gym.Env):
 
     def _current_observation(self):
         #frame = self.rates.loc[self.current_step - BAR_HISTORY: self.current_step-1, 'close.bid'].values / self.max_price
-        frame = self.rates.iloc[self.current_step, -50:].values
-        obs = np.append(frame, [max(0, self.equity / TARGET_ACCOUNT_BALANCE), (self.position_volume + MAX_ALLOWED_POSITION) /2/MAX_ALLOWED_POSITION] )
+        #frame = np.append(self.rates.iloc[self.current_step, 0:4].values/4,self.rates.iloc[self.current_step, -50:].values)
+        frame = self.rates.iloc[self.current_step, 0:4].values/4
+        obs = np.append( frame, [max(0, self.equity / TARGET_ACCOUNT_BALANCE), 0 if self.position_volume <= 0 else self.position_volume /MAX_ALLOWED_POSITION, 0 if self.position_volume >= 0 else -self.position_volume /MAX_ALLOWED_POSITION])
         return obs
 
     def _take_action(self, action):
@@ -63,7 +64,7 @@ class ForexTradingEnv(gym.Env):
         isDone = False
 
         # Buy minimum volume
-        if action == 0:
+        if action == 2:
             if self.position_volume < 0 :
                 self.balance += (self.position_vwap - ask) * MIN_ALLOWED_POSITION - COMMISSION * MIN_ALLOWED_POSITION 
                 self.position_volume += MIN_ALLOWED_POSITION
@@ -77,10 +78,10 @@ class ForexTradingEnv(gym.Env):
             elif self.position_volume == 0: #we cant open any position now
                 isDone = True
             else: #not enough margin to open new position
-                self.balance *= 0.9
+                self.balance *= 0.9999
 
         # Sell minimum volume
-        elif action == 1:
+        elif action == 0:
             if self.position_volume > 0 :
                 self.balance += (bid - self.position_vwap) * MIN_ALLOWED_POSITION - COMMISSION * MIN_ALLOWED_POSITION 
                 self.position_volume -= MIN_ALLOWED_POSITION
@@ -94,7 +95,7 @@ class ForexTradingEnv(gym.Env):
             elif self.position_volume == 0:
                 isDone = True   
             else: #not enough margin to open new position
-                self.balance *= 0.9           
+                self.balance *= 0.9999           
         
         #stopout test
         worst_equity = self._calculateEquity(self.rates.loc[self.current_step, "high.ask"], self.rates.loc[self.current_step, "low.bid"])
@@ -102,7 +103,7 @@ class ForexTradingEnv(gym.Env):
             self.balance = worst_equity
             self.position_volume = self.margin_used = 0
         #go to next state
-        self.equity = self._calculateEquity(ask, bid)
+        self.equity = self._calculateEquity(self.rates.loc[self.current_step, "close.ask"], self.rates.loc[self.current_step, "close.bid"])
         self.free_margin = self.equity - self.margin_used
 
         if self.equity > TARGET_ACCOUNT_BALANCE:
@@ -113,7 +114,7 @@ class ForexTradingEnv(gym.Env):
 
     def _calculateEquity(self, ask, bid):
         price = bid if self.position_volume > 0 else ask
-        return self.balance + (price - self.position_vwap) * abs(self.position_volume) * copysign(1, self.position_volume)      
+        return self.balance + (price - self.position_vwap) * self.position_volume
         
     def step(self, action):
         self.lastAction = action
@@ -123,7 +124,7 @@ class ForexTradingEnv(gym.Env):
         self.current_step += 1
         if self.current_step >= self.rates.shape[0]-2:
             isDone = True
-        reward = (self.equity - prevEquity) / INITIAL_ACCOUNT_BALANCE 
+        reward = (self.equity - prevEquity) / INITIAL_ACCOUNT_BALANCE *10
         obs = self._current_observation()
 
         return obs, reward, isDone, {}
