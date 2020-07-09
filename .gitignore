@@ -2,9 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-/2. Environments/tensorboard/DQN_4/*.RIX-DVP-SRV01
-/2. Environments/tensorboard/DQN_5/*.RIX-DVP-SRV01
-*.RIX-DVP-SRV01
-/output_EURUSD_M1
+/2. Environments/tensorboard/*
+/output_*
 /2. Environments/models
-/output_EURUSD_M1_sin
