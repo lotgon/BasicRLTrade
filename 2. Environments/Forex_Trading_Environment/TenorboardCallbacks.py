@@ -18,7 +18,12 @@ class TensorboardCallback(BaseCallback):
                 #self.model.summary = tf.summary.merge_all()
             #self.is_tb_set = True
         # Log scalar value (here a random variable)
-        value = self.env.env_method("getLastAction", indices=0)
-        summary = tf.Summary(value=[tf.Summary.Value(tag='LastAction', simple_value=value[0])])
+        value = self.env.env_method("get_last_n_any_action", indices=0)
+        summary = tf.Summary(value=[tf.Summary.Value(tag='get_last_n_any_action', simple_value=value[0])])
         self.locals['writer'].add_summary(summary, self.num_timesteps)
+        
+        value = self.env.env_method("get_last_steps_alive", indices=0)
+        summary = tf.Summary(value=[tf.Summary.Value(tag='get_last_steps_alive', simple_value=value[0])])
+        self.locals['writer'].add_summary(summary, self.num_timesteps)
+
         return True
