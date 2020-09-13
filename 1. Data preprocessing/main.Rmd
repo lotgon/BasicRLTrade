@@ -13,7 +13,7 @@ Periodicity     <- "M1"
 TradedSymbol    <- "EURUSD"
 Cluster_number  <- EmbeddingSize
 Window_size     <- 360
-Simulation      <- "sin"
+Simulation      <- ""#sin
 
 OutputFolder <- paste("../output", TradedSymbol, Periodicity, Simulation, sep="_")
 RawCenters_FileName <- file.path(OutputFolder, "rawCenters.csv")
@@ -43,7 +43,7 @@ if( !file.exists(RawCenters_FileName))
   BuildCenterLines(c(TradedSymbol), EmbeddingStartDate, EmbeddingEndDate, Periodicity, Cluster_number, Window_size, RawCenters_FileName, MeltedCTable_FileName)
 #review result 
 meltedcTable <- readRDS(MeltedCTable_FileName)
-ggplot(meltedcTable[symbol==TradedSymbol & clusterIndex==45], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
+ggplot(meltedcTable[symbol==TradedSymbol], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line()
 ```
 
 # Create 
@@ -52,6 +52,7 @@ quotes <- BuildEnvironmentData(StartDate, EndDate, TradedSymbol, Periodicity, En
 quotes <- Convert2Simulation(EnvData_FileName, Simulation, window_size = Window_size)
 agentData <- BuildAgentData(quotes, Window_size, RawCenters_FileName, AgentData_FileName )
 
+ggplot(quotes[1:(24*Window_size), .(i = .I, close.bid)], aes(x=i, y=close.bid)) + geom_point()
 ```
 
 ##Sanity check
@@ -70,7 +71,3 @@ drawData <- rbind(meltedcTable, sampleData, fill=TRUE)
 ggplot(drawData[symbol==TradedSymbol & clusterIndex %in% closestCenters], aes(x=index, y=value, group=clusterIndex, colour=clusterIndex, size=clusterPower)) + geom_line() 
 ```
 
-#create small training data 
-```{r}
-ggplot(quotes[1:(24*Window_size), .(i = .I, close.bid)], aes(x=i, y=close.bid)) + geom_point()
-```

@@ -20,6 +20,9 @@ BuildAgentData <- function(quotes, window_size, inputRawCenters_FileName, output
     m[i,] <- rowSums(sweep(rawCenters, 2, norm_price)^2)
   }
   assertthat::assert_that(quotes[startIndices + window_size, .N]== nrow(m))
+  m <- (m - mean(m))/ sd(m)
+  m <- pmin(m, 10)
+  m <- pmax(m, -10)
   embeddedQuotes <- cbind(quotes[startIndices + window_size,], m)
   fwrite(embeddedQuotes, outputAgentData_FileName)
   embeddedQuotes
@@ -32,7 +35,10 @@ BuildEnvironmentData <- function(startDate=ISOdate(2017, 6, 1, tz = "UTC"), endD
   fwrite(quotes, outputEnvData_FileName)
   quotes
 }
-Convert2Simulation <- function(EnvData_FileName, simulationType = "sin", window_size){
+Convert2Simulation <- function(EnvData_FileName, simulationType, window_size){
+  if( length(simulationType) == 0 )
+    return( quotes)
+  
   quotes <- fread(EnvData_FileName)
   if( simulationType == "sin"){
     med <- quotes[1:(7*window_size), median(close.ask)]

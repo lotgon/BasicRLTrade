@@ -11,7 +11,7 @@ from math import copysign
 #MAX_OPEN_POSITIONS = 5
 #MAX_STEPS = 20000
 
-EMBEDDING_SIZE = 0
+EMBEDDING_SIZE = 50
 #BAR_HISTORY = 10
 
 INITIAL_ACCOUNT_BALANCE = 1000
@@ -35,7 +35,7 @@ class ForexTradingEnv(gym.Env):
         self.action_space = spaces.Discrete(3)
 
         # Prices contains the OHCL values for the last five prices and last one is account info
-        self.observation_space = spaces.Box(low=0, high=2, shape=(3+2+1+EMBEDDING_SIZE,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-50, high=50, shape=(3+EMBEDDING_SIZE,), dtype=np.float32)
         self.steps_alive = 1
         self.n_steps_passive = 0
 
@@ -63,10 +63,12 @@ class ForexTradingEnv(gym.Env):
     def _current_observation(self):
         #frame = self.rates.loc[self.current_step - BAR_HISTORY: self.current_step-1, 'close.bid'].values / self.max_price
         #frame = np.append(self.rates.iloc[self.current_step, 0:4].values/4,self.rates.iloc[self.current_step, -50:].values)
-        frame = self.rates.iloc[(self.current_step-1):(self.current_step+1), 0].values.flatten()
-        frame = np.append(frame, 1 + self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0])#1 if self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0]>0 else 0)
-        #obs = np.append( frame, [1+max(0, self.equity / TARGET_ACCOUNT_BALANCE), 0 if self.position_volume <= 0 else self.position_volume /MAX_ALLOWED_POSITION/1e4, 0 if self.position_volume >= 0 else -self.position_volume /MAX_ALLOWED_POSITION/1e4])
-        obs = np.append( frame, [1+max(0, self.equity / TARGET_ACCOUNT_BALANCE), 0, 0])
+        #frame = (self.rates.iloc[self.current_step, -50:].values - 0.001945728) /0.0009896774
+        frame = self.rates.iloc[self.current_step, -50:].values
+        #frame = np.append( frame, (self.rates.iloc[(self.current_step-1):(self.current_step+1), 0].values.flatten() -1.11)/ 0.0166 )
+        #frame = np.append(frame, (self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0]) / 0.000128)        #1 if self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0]>0 else 0)
+        obs = np.append( frame, [self.equity / TARGET_ACCOUNT_BALANCE, 0 if self.position_volume <= 0 else self.position_volume /MAX_ALLOWED_POSITION, 0 if self.position_volume >= 0 else -self.position_volume /MAX_ALLOWED_POSITION])
+        #obs = np.append( frame, [0, 0, 0])
         return obs
 
     def _take_action(self, action):
@@ -76,8 +78,8 @@ class ForexTradingEnv(gym.Env):
         self.steps_alive += 1
         if action == 1:
             self.n_steps_passive += 1
-            #if self.position_volume == 0: #we lose possibility to earn money
-                #self.balance *= 0.99999
+            if self.position_volume == 0: #we lose possibility to earn money
+                self.balance *= 0.99999
 
         # Buy minimum volume
         if action == 2:
