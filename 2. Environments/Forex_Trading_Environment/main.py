@@ -24,12 +24,14 @@ def main():
 
     import tensorflow as tf
     from TenorboardCallbacks import TensorboardCallback
-    checkpoint_callback = CheckpointCallback(save_freq=100000, save_path='./models/', name_prefix='ppo2')
+    checkpoint_callback = CheckpointCallback(save_freq=1000000, save_path='./models/', name_prefix='ppo2')
 
 
-    for curr in [1,2 , 3, 4, 5, 6, 7, 8, 9, 10]:
+    for curr in [1]:
         model = PPO2(PPO2Policy_Basic, env, verbose=1, tensorboard_log = "./tensorboard", vf_coef = 1e-7, ent_coef=1e-4, n_steps=512, gamma=0.99)
-        model.learn(total_timesteps=1000000000, log_interval=10000000, callback=CallbackList([TensorboardCallback(env), checkpoint_callback]))
+        #model = PPO2.load("5_days_model/ppo2_999000000_steps.zip", policy=PPO2Policy_Basic, env = env,verbose=1, tensorboard_log = "./tensorboard")
+
+        model.learn(total_timesteps=10000000000, log_interval=10000000, callback=CallbackList([TensorboardCallback(env), checkpoint_callback]))
         model.save(model_fileName)
 
     obs = env.reset()

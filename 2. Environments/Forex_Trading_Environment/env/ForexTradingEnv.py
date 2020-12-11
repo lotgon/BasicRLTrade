@@ -63,11 +63,11 @@ class ForexTradingEnv(gym.Env):
     def _current_observation(self):
         #frame = self.rates.loc[self.current_step - BAR_HISTORY: self.current_step-1, 'close.bid'].values / self.max_price
         #frame = np.append(self.rates.iloc[self.current_step, 0:4].values/4,self.rates.iloc[self.current_step, -50:].values)
-        #frame = (self.rates.iloc[self.current_step, -50:].values - 0.001945728) /0.0009896774
-        frame = self.rates.iloc[self.current_step, -50:].values
-        #frame = np.append( frame, (self.rates.iloc[(self.current_step-1):(self.current_step+1), 0].values.flatten() -1.11)/ 0.0166 )
+        frame = (self.rates.iloc[self.current_step, -50:].values - 0.001945728) /0.0009896774
+#       frame = self.rates.iloc[self.current_step, -50:].values
+
         #frame = np.append(frame, (self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0]) / 0.000128)        #1 if self.rates.iloc[self.current_step, 0] - self.rates.iloc[self.current_step-1, 0]>0 else 0)
-        obs = np.append( frame, [self.equity / TARGET_ACCOUNT_BALANCE, 0 if self.position_volume <= 0 else self.position_volume /MAX_ALLOWED_POSITION, 0 if self.position_volume >= 0 else -self.position_volume /MAX_ALLOWED_POSITION])
+        obs = np.append( frame, [self.equity / TARGET_ACCOUNT_BALANCE, 0 if self.position_volume <= 0 else self.position_volume /MAX_ALLOWED_POSITION, 0 if self.position_volume >= 0 else self.position_volume /MAX_ALLOWED_POSITION])
         #obs = np.append( frame, [0, 0, 0])
         return obs
 
